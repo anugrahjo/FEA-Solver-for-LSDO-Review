@@ -1,6 +1,12 @@
 import numpy as np
 
 from openmdao.api import ExplicitComponent
+
+from sparse_algebra.core.dense_to_sparse import dense_to_sparse
+from sparse_algebra.core.sparse_to_dense import sparse_to_dense
+from sparse_algebra.core.sparse_tensor import SparseTensor
+from sparse_algebra.sparse_einsum.sparse_einsum import sparse_einsum
+
 from rectangular_plate import RectangularElement
 
 
@@ -39,7 +45,20 @@ class StrainComp(ExplicitComponent):
         R = RectangularElement()
         W = R.gaussian_weights()                            #weights defined only for a rectangular element
 
+        # B_sp = dense_to_sparse(B)
+        # S_sp = dense_to_sparse(S)
+        # d_sp = dense_to_sparse(d)
+        # W_sp = dense_to_sparse(W)
+
+
         strain_pre = np.einsum('ijkl, iln, n -> ijk', B, S, d)
         strain = np.einsum('ijk, j -> ik', strain_pre, W)
+
+        # strain_pre_sp = sparse_einsum('ijkl, iln, n -> ijk', B_sp, S_sp, d_sp)
+        # strain_sp = sparse_einsum('ijk, j -> ik', strain_pre_sp, W_sp)
+
+        # strain = sparse_to_dense(strain_sp)
+
+
 
         outputs['strain'] = strain

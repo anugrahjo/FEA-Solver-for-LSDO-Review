@@ -73,7 +73,7 @@ class FEAGroup(Group):
         comp = KglobalComp(S = S, max_edof = max_edof, NEL =NEL, NDOF = NDOF)
         self.add_subsystem('Kg_comp', comp, promotes=['*'])
 
-        comp = SolveComp(NDOF = NDOF, A = A , f = f , constraints = constraints)
+        comp = SolveComp(NDOF = NDOF, A = A , f = f , NEL = NEL, constraints = constraints)
         self.add_subsystem('Solve_comp', comp, promotes=['*'])
         
         comp = ComplianceComp(NDOF = NDOF, f = f)

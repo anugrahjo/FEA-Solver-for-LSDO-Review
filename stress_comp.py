@@ -1,5 +1,10 @@
 import numpy as np
 
+from sparse_algebra.core.dense_to_sparse import dense_to_sparse
+from sparse_algebra.core.sparse_to_dense import sparse_to_dense
+from sparse_algebra.core.sparse_tensor import SparseTensor
+from sparse_algebra.sparse_einsum.sparse_einsum import sparse_einsum
+
 from openmdao.api import ExplicitComponent
 
 
@@ -33,6 +38,12 @@ class StressComp(ExplicitComponent):
         D = inputs['D']
         strain = inputs['strain']
 
+        # D_sp = dense_to_sparse(D)
+        # strain_sp = dense_to_sparse(strain)
+
         stress = np.einsum('ij, kj -> ki', D, strain)
+
+        # stress_sp = sparse_einsum([[0,1],[2,1],[2,0]], D_sp, strain_sp)
+        # stress = sparse_to_dense(stress_sp)
 
         outputs['stress'] = stress
