@@ -18,7 +18,10 @@ class VolumeComp(ExplicitComponent):
         self.add_input('t', shape=NEL)
         self.add_output('volume')
 
-        self.declare_partials('volume', 't', method = 'cs')
+        row_ind = np.zeros((NEL), dtype = np.int64)
+        col_ind = np.arange(NEL)
+
+        self.declare_partials('volume', 't', val= be * le, rows=row_ind, cols=col_ind)
 
     def compute(self, inputs, outputs):
         be = self.options['be']

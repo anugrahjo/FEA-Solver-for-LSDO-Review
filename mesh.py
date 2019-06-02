@@ -4,6 +4,7 @@ from shape_functions import Shape_Function, Diff_Shape_Function
 from gauss_points import Gauss_Points
 from truss_element import TrussElement
 from rectangular_plate import RectangularElement
+from sparse_algebra import SparseTensor
 
 class Mesh():
 
@@ -19,7 +20,7 @@ class Mesh():
         self.NDIM = 0                               #num of dimensions in which the mesh is present(Problem Dependent)
         self.ENT = np.array([])                     #max. num of nodes per element is set as max_nn
         self.EFT = np.array([])                     #max. num of dof per element is set as max_edof
-        self.S = np.array([])                       #max. num of dof per element is set as max_edof
+        self.S = SparseTensor()                       #max. num of dof per element is set as max_edof
         self.Node_Coords = np.array([])             #Coords of each node in the mesh
         self.Elem_Group_Dict = np.array([])         #element type of each element in the mesh
         self.pN = np.array([])                      #partials of shape functions for each element group
@@ -100,12 +101,31 @@ class Mesh():
         # Selection_Matrix considering we only have one type of element: problem?? solved with 30 not tested
         # Also, recalculating S every time new elem. groups are added as NDOF changes : Problem?
 
-        S = np.zeros((NEL, max_edof, NDOF))
-        for i in range(NEL):
-            for j in range(max_edof):
-                if self.EFT[i][j] != -1:
-                    dof_index = self.EFT[i][j] - 1
-                    S[i][j][dof_index] = 1
+        # S = np.zeros((NEL, max_edof, NDOF))
+
+        # dof_index = np.where(self.EFT > 0)
+        # S[np.argwhere(self.EFT - 1), self.EFT]
+
+        S = SparseTensor()
+        S_shape = np.array([NEL, max_edof, NDOF])
+        k = np.where(self.EFT >= 1)                 # k stores the indices where args are not -1(since DOF numbering starts from 1)
+        dof_index = (self.EFT[k] - 1).astype(int)
+        S_val = np.ones(dof_index.size)
+        k0 = k[0].reshape((dof_index.size, 1))
+        k1 = k[1].reshape((dof_index.size, 1))
+        di = dof_index.reshape((dof_index.size, 1))
+        S_ind = np.append( k0, k1, axis = 1)
+        S_ind = np.append( S_ind, di, axis = 1)
+        S.initialize(S_shape, S_val, S_ind)
+        
+        
+        # S[k[0], k[1], dof_index] = 1
+
+        # for i in range(NEL):
+        #     for j in range(max_edof):
+        #         if self.EFT[i, j] != -1:
+        #             dof_index = self.EFT[i, j] - 1
+        #             S[i, j, dof_index] = 1
 
         self.S = S
 

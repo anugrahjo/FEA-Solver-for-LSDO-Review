@@ -33,7 +33,7 @@ class BComp(ExplicitComponent):
             n_D = 1
         self.add_input('J', shape=(NEL, ng**2, NDIM, NDIM))
         self.add_output('B', shape=(NEL, ng**2, n_D, max_edof))
-        self.declare_partials('B', '*', method = 'cs')
+        # self.declare_partials('B', '*', method = 'cs')
 
 
     def compute(self, inputs, outputs):
@@ -53,7 +53,7 @@ class BComp(ExplicitComponent):
                 pN[i] = ele.shape_function_partial()
                 for j in range(ng**2):
                     J[i][j] = np.identity(NDIM)
-                    pN_ele_global = np.dot(np.linalg.inv(J[i][j]), pN[i][j])
+                    # pN_ele_global = np.dot(np.linalg.inv(J[i][j]), pN[i][j])
                     for k in range(max_nn):
                         B[i][j][0][2*k] = pN[i][j][0][k]
                         B[i][j][1][2*k+1] = pN[i][j][1][k]

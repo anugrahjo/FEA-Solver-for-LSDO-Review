@@ -13,13 +13,13 @@ class ComplianceComp(ExplicitComponent):
         NDOF = self.options['NDOF']
         f = self.options['f']
 
-        self.add_input('d', shape = NDOF)
+        self.add_input('displacements', shape = NDOF)
         self.add_output('compliance')
 
-        self.declare_partials('compliance', 'd', val = f)
+        self.declare_partials('compliance', 'displacements', val = f)
 
     def compute(self, inputs, outputs):
         f = self.options['f']
-        d = self._inputs['d']
+        displacements = self._inputs['displacements']
 
-        outputs['compliance'] = np.dot(f, d)
+        outputs['compliance'] = np.dot(f, displacements)

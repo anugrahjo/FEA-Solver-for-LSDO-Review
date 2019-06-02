@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 from openmdao.api import Problem, ScipyOptimizeDriver, ExecComp, view_model
+from openmdao.api import pyOptSparseDriver
+from sparse_algebra import SparseTensor
+from sparse_algebra import compute_indices
+from sparse_algebra import sparse, dense
 
 from FEA_group import FEAGroup
 
@@ -106,30 +110,42 @@ mesh.set_nodes(node_coords1, ndof1)
 mesh.add_elem_group(ent1, 2)                            # 2 is element type for rectangular elements
 mesh.add_elem_group_partials()
 
+# S = mesh.S
+# NEL = mesh.NEL
+# max_edof = mesh.max_edof
+
+
 
 # prob = Problem(model = FEAGroup(C = C, mesh = mesh))
 
 prob = Problem()
 prob.model = FEAGroup(C=C, mesh=mesh, problem_type = prob_type, ng = ng, A =A, f = f, constraints = constraints, be = be, le = le)
+prob.model.connect('K_temp', 'Solve_comp.A')
+prob.model.connect('f_temp', 'Solve_comp.b')
+prob.model.connect('Solve_comp.x','d')
 prob.model.add_design_var('t')
 prob.model.add_constraint('volume', upper = l*b*3)
-prob.model.add_constraint('t', lower = 0)
+prob.model.add_constraint('t', lower = 1)
 
 
 
 
 prob.model.add_objective('compliance')
 
-prob.driver = ScipyOptimizeDriver()
-prob.driver.options['optimizer'] = 'SLSQP'
+# prob.driver = ScipyOptimizeDriver()
+# prob.driver.options['optimizer'] = 'SLSQP'
+prob.driver = pyOptSparseDriver()
+prob.driver.options['optimizer'] = 'SNOPT'
+
 
 # prob.driver.options['tol'] = 1e-9
 # prob.driver.options['obj'] = True
 
 prob.setup()
 prob.run_driver()
+# prob.run_model()
 print(prob['compliance'])
-print(prob['d'])
+print(prob['displacements'])
 print(prob['t'])
 print(prob['volume'])
 
